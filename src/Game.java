@@ -24,7 +24,7 @@ public class Game extends Canvas implements Runnable {
         }
         WIDTH = 15 * line;
         HEIGHT = 15 * line;
-        new Window(WIDTH, HEIGHT, "TICTACTOE", this);
+        new Window(WIDTH, HEIGHT, "MineMaze", this);
 
         handler = new Handler();
         this.addMouseListener(mouse);
