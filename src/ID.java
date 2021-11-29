@@ -6,5 +6,6 @@ public enum ID {
     CHECKPOINT(),
     PLAYER,
     GOOMBA(),
+    GOAL(),
     BORDER();
 }
