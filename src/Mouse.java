@@ -46,17 +46,14 @@ public class Mouse implements MouseInputListener {
     }
 
     public void mouseEntered(MouseEvent e) {
-
     }
 
     public void mouseExited(MouseEvent e) {
-
     }
 
     public void mousePressed(MouseEvent e) {
         initialX = e.getX();
         initialY = e.getY();
-        e.consume();
     }
 
     public void mouseReleased(MouseEvent e) {
@@ -75,7 +72,6 @@ public class Mouse implements MouseInputListener {
     }
 
     public void mouseMoved(MouseEvent e) {
-
         e.consume();
     }
 }
