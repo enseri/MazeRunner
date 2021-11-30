@@ -14,9 +14,12 @@ public class Game extends Canvas implements Runnable {
     private int size = 30 * 30;
     private int tileSize = 15;
     private int pLOC = 0;
+    private boolean makingMaze;
     private int spawnLocation = 0;
+    private int originalSpawn = 0;
     private int[] grid = new int[size];
     private int[] goombaFacing = new int[size];
+    private int[] coverableObjects = new int[size];
     private Thread thread;
     private boolean running = false;
     private Handler handler;
@@ -77,19 +80,32 @@ public class Game extends Canvas implements Runnable {
         double amountOfTicks = 60.0;
         double ns = 1000000000 / amountOfTicks;
         double delta = 0;
+        int prevFPS = 0;
+        int fps = 0;
+        int x = 0;
         long timer = System.currentTimeMillis();
         while (running) {
             long now = System.nanoTime();
             delta += (now - lastTime) / ns;
             lastTime = now;
             while (delta >= 1) {
+                fps++;
                 tick();
                 delta--;
             }
-            if (running)
+            if (running) {
                 render();
+                x++;
+                if (x >= prevFPS / 6 && !makingMaze) {
+                    updateEnemies();
+                    updateCoverableObjects();
+                    x = 0;
+                }
+            }
             if (System.currentTimeMillis() - timer > 1000) {
                 timer += 1000;
+                prevFPS = fps;
+                fps = 0;
             }
         }
         stop();
@@ -143,7 +159,8 @@ public class Game extends Canvas implements Runnable {
 
     public void begin() {
         int keyboardClicks = 0, mouseClicks = 0, event = 0, key = 0, zone = 1, objectLoc, spawns = 0;
-        boolean makingMaze = true;
+        boolean playing = true;
+        makingMaze = true;
         while (makingMaze) {
             while (mouseClicks == mouse.getClicks() && keyboardClicks == keyboard.getClicks()) {
                 out.print("");
@@ -166,23 +183,28 @@ public class Game extends Canvas implements Runnable {
                     } else if (zone == 2) {
                         if (grid[objectLoc] == 0 && spawns == 0) {
                             spawnLocation = objectLoc;
+                            originalSpawn = objectLoc;
                             spawns++;
                             grid[objectLoc] = 2;
+                            coverableObjects[objectLoc] = 2;
                             handler.replaceObject(objectLoc * 3,
                                     new SPAWN((objectLoc % line) * tileSize, (objectLoc / line) * tileSize, ID.SPAWN));
                         } else if (grid[objectLoc] == 2) {
                             spawns--;
                             grid[objectLoc] = 0;
+                            coverableObjects[objectLoc] = 0;
                             handler.replaceObject(objectLoc * 3,
                                     new TILE((objectLoc % line) * tileSize, (objectLoc / line) * tileSize, ID.TILE));
                         }
                     } else if (zone == 3) {
                         if (grid[objectLoc] == 0) {
                             grid[objectLoc] = 3;
+                            coverableObjects[objectLoc] = 3;
                             handler.replaceObject(objectLoc * 3, new CHECKPOINT((objectLoc % line) * tileSize,
                                     (objectLoc / line) * tileSize, ID.CHECKPOINT));
                         } else if (grid[objectLoc] == 3) {
                             grid[objectLoc] = 0;
+                            coverableObjects[objectLoc] = 0;
                             handler.replaceObject(objectLoc * 3,
                                     new TILE((objectLoc % line) * tileSize, (objectLoc / line) * tileSize, ID.TILE));
                         }
@@ -198,6 +220,7 @@ public class Game extends Canvas implements Runnable {
                                 handler.replaceObject(objectLoc * 3, new TILE((objectLoc % line) * tileSize,
                                         (objectLoc / line) * tileSize, ID.TILE));
                             } else {
+                                out.println("Goomba turned");
                                 goombaFacing[objectLoc]++;
                             }
                         }
@@ -232,44 +255,44 @@ public class Game extends Canvas implements Runnable {
                         for (int i = 0; i != tilesPerColumn; i += rateOfY) {
                             currentY = initialY + i;
                             if (zone == 1) {
-                                if (grid[(currentY * 30) + currentX] == 0) {
-                                    grid[(currentY * 30) + currentX] = 1;
-                                    handler.replaceObject(((currentY * 30) + currentX) * 3,
-                                            new BORDER(currentX * 15, currentY * 15, ID.BORDER));
-                                } else if (grid[(currentY * 30) + currentX] == 1) {
-                                    grid[(currentY * 30) + currentX] = 0;
-                                    handler.replaceObject(((currentY * 30) + currentX) * 3,
-                                            new TILE(currentX * 15, currentY * 15, ID.TILE));
+                                if (grid[(currentY * line) + currentX] == 0) {
+                                    grid[(currentY * line) + currentX] = 1;
+                                    handler.replaceObject(((currentY * line) + currentX) * 3,
+                                            new BORDER(currentX * tileSize, currentY * tileSize, ID.BORDER));
+                                } else if (grid[(currentY * line) + currentX] == 1) {
+                                    grid[(currentY * line) + currentX] = 0;
+                                    handler.replaceObject(((currentY * line) + currentX) * 3,
+                                            new TILE(currentX * tileSize, currentY * tileSize, ID.TILE));
                                 }
                             } else if (zone == 3) {
-                                if (grid[(currentY * 30) + currentX] == 0) {
-                                    grid[(currentY * 30) + currentX] = 3;
-                                    handler.replaceObject(((currentY * 30) + currentX) * 3,
-                                            new CHECKPOINT(currentX * 15, currentY * 15, ID.CHECKPOINT));
-                                } else if (grid[(currentY * 30) + currentX] == 3) {
-                                    grid[(currentY * 30) + currentX] = 0;
-                                    handler.replaceObject(((currentY * 30) + currentX) * 3,
-                                            new TILE(currentX * 15, currentY * 15, ID.TILE));
+                                if (grid[(currentY * line) + currentX] == 0) {
+                                    grid[(currentY * line) + currentX] = 3;
+                                    handler.replaceObject(((currentY * line) + currentX) * 3,
+                                            new CHECKPOINT(currentX * tileSize, currentY * tileSize, ID.CHECKPOINT));
+                                } else if (grid[(currentY * line) + currentX] == 3) {
+                                    grid[(currentY * line) + currentX] = 0;
+                                    handler.replaceObject(((currentY * line) + currentX) * 3,
+                                            new TILE(currentX * tileSize, currentY * tileSize, ID.TILE));
                                 }
                             } else if (zone == 4) {
-                                if (grid[(currentY * 30) + currentX] == 0) {
-                                    grid[(currentY * 30) + currentX] = 4;
-                                    handler.replaceObject(((currentY * 30) + currentX) * 3,
-                                            new GOOMBA(currentX * 15, currentY * 15, ID.GOOMBA));
-                                } else if (grid[(currentY * 30) + currentX] == 4) {
-                                    grid[(currentY * 30) + currentX] = 0;
-                                    handler.replaceObject(((currentY * 30) + currentX) * 3,
-                                            new TILE(currentX * 15, currentY * 15, ID.TILE));
+                                if (grid[(currentY * line) + currentX] == 0) {
+                                    grid[(currentY * line) + currentX] = 4;
+                                    handler.replaceObject(((currentY * line) + currentX) * 3,
+                                            new GOOMBA(currentX * tileSize, currentY * tileSize, ID.GOOMBA));
+                                } else if (grid[(currentY * line) + currentX] == 4) {
+                                    grid[(currentY * line) + currentX] = 0;
+                                    handler.replaceObject(((currentY * line) + currentX) * 3,
+                                            new TILE(currentX * tileSize, currentY * tileSize, ID.TILE));
                                 }
                             } else if (zone == 6) {
-                                if (grid[(currentY * 30) + currentX] == 0) {
-                                    grid[(currentY * 30) + currentX] = 6;
-                                    handler.replaceObject(((currentY * 30) + currentX) * 3,
-                                            new GOAL(currentX * 15, currentY * 15, ID.GOAL));
-                                } else if (grid[(currentY * 30) + currentX] == 6) {
-                                    grid[(currentY * 30) + currentX] = 0;
-                                    handler.replaceObject(((currentY * 30) + currentX) * 3,
-                                            new TILE(currentX * 15, currentY * 15, ID.TILE));
+                                if (grid[(currentY * line) + currentX] == 0) {
+                                    grid[(currentY * line) + currentX] = 6;
+                                    handler.replaceObject(((currentY * line) + currentX) * 3,
+                                            new GOAL(currentX * tileSize, currentY * tileSize, ID.GOAL));
+                                } else if (grid[(currentY * line) + currentX] == 6) {
+                                    grid[(currentY * line) + currentX] = 0;
+                                    handler.replaceObject(((currentY * line) + currentX) * 3,
+                                            new TILE(currentX * tileSize, currentY * tileSize, ID.TILE));
                                 }
                             }
                         }
@@ -283,12 +306,84 @@ public class Game extends Canvas implements Runnable {
                     System.out.println("Current Zone: " + zone);
                 }
             }
-            if (zone >= 7){
-                //makingMaze = false;
-                updateGoombas();
+            if (zone == 7)
+                makingMaze = false;
+        }
+        respawn();
+        keyboardClicks = keyboard.getClicks();
+        while (playing) {
+            while (keyboardClicks == keyboard.getClicks()) {
+                out.print("");
+            }
+            key = keyboard.getKey();
+            keyboardClicks = keyboard.getClicks();
+            if (key == 87) { // W
+                if (pLOC - line > -1 && grid[pLOC - line] != 1 && grid[pLOC - line] != 4) {
+                    if (grid[pLOC - line] == 2 || grid[pLOC - line] == 3) {
+                        spawnLocation = pLOC - line;
+                    } else if (grid[pLOC - line] == 6) {
+                        out.println("Victory!!!");
+                        spawnLocation = originalSpawn;
+                        respawn();
+                    }
+                    movePlayer(pLOC, pLOC - line);
+
+                } else if (pLOC - line > -1 && grid[pLOC - line] == 4) {
+                    respawn();
+                }
+            } else if (key == 65) { // A
+                if (pLOC % line != 0 && grid[pLOC - 1] != 1 && grid[pLOC - 1] != 4) {
+                    if (grid[pLOC - 1] == 2 || grid[pLOC - 1] == 3) {
+                        spawnLocation = pLOC - 1;
+                    } else if (grid[pLOC - 1] == 6) {
+                        out.println("Victory!!!");
+                        spawnLocation = originalSpawn;
+                        respawn();
+                    }
+                    movePlayer(pLOC, pLOC - 1);
+
+                } else if (pLOC % line != 0 && grid[pLOC - 1] == 4) {
+                    respawn();
+                }
+            } else if (key == 83) { // S
+                if (pLOC + line < size && grid[pLOC + line] != 1 && grid[pLOC + line] != 4) {
+                    if (grid[pLOC + line] == 2 || grid[pLOC + line] == 3) {
+                        spawnLocation = pLOC + line;
+                    } else if (grid[pLOC + line] == 6) {
+                        out.println("Victory!!!");
+                        spawnLocation = originalSpawn;
+                        respawn();
+                    }
+                    movePlayer(pLOC, pLOC + line);
+
+                } else if (pLOC + line > -1 && grid[pLOC + line] == 4) {
+                    respawn();
+                }
+            } else if (key == 68) { // D
+                if ((pLOC - (line - 1)) % line != 0 && grid[pLOC + 1] != 1 && grid[pLOC + 1] != 4) {
+                    if (grid[pLOC + 1] == 2 || grid[pLOC + 1] == 3) {
+                        spawnLocation = pLOC + 1;
+                    } else if (grid[pLOC + 1] == 6) {
+                        out.println("Victory!!!");
+                        spawnLocation = originalSpawn;
+                        respawn();
+                    }
+                    movePlayer(pLOC, pLOC + 1);
+
+                } else if ((pLOC - (line - 1)) % line != 0 && grid[pLOC + 1] == 4) {
+                    respawn();
+                }
             }
         }
+    }
 
+    public void movePlayer(int prevLoc, int currentLoc) {
+        grid[prevLoc] = 0;
+        grid[currentLoc] = 7;
+        pLOC = currentLoc;
+        handler.replaceObject(prevLoc * 3, new TILE((prevLoc % line) * tileSize, (prevLoc / line) * tileSize, ID.TILE));
+        handler.replaceObject(currentLoc * 3,
+                new PLAYER((currentLoc % line) * tileSize, (currentLoc / line) * tileSize, ID.PLAYER));
     }
 
     public void respawn() {
@@ -299,7 +394,20 @@ public class Game extends Canvas implements Runnable {
         handler.replaceObject(pLOC * 3, new PLAYER((pLOC % line) * tileSize, (pLOC / line) * tileSize, ID.PLAYER));
     }
 
-    public void updateGoombas() {
+    public void updateCoverableObjects() {
+        for (int i = 0; i != size; i++) {
+            if (coverableObjects[i] != 0) {
+                if (coverableObjects[i] == 2 && grid[i] == 0) {
+                    handler.replaceObject(i * 3, new SPAWN((i % line) * tileSize, (i / line) * tileSize, ID.SPAWN));
+                } else if (coverableObjects[i] == 3 && grid[i] == 0) {
+                    handler.replaceObject(i * 3,
+                            new CHECKPOINT((i % line) * tileSize, (i / line) * tileSize, ID.CHECKPOINT));
+                }
+            }
+        }
+    }
+
+    public void updateEnemies() {
         for (int i = 0; i != size; i++) {
             if (grid[i] == 4) {
                 if (goombaFacing[i] == 1) { // up
@@ -395,8 +503,8 @@ public class Game extends Canvas implements Runnable {
                 }
             }
         }
-        for(int i = 0; i != size; i++){
-            if(grid[i] == 40)
+        for (int i = 0; i != size; i++) {
+            if (grid[i] == 40)
                 grid[i] /= 10;
         }
     }
