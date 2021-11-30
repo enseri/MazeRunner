@@ -3,7 +3,6 @@ import javax.swing.event.MouseInputListener;
 
 public class Mouse implements MouseInputListener {
     private int initialX, initialY, x, y, event = -1, clicks, objectLoc, tileSize, line;
-    private boolean initialDrag = true;
 
     public void setSizes(int x, int y) {
         tileSize = x;
@@ -55,26 +54,23 @@ public class Mouse implements MouseInputListener {
     }
 
     public void mousePressed(MouseEvent e) {
-
+        initialX = e.getX();
+        initialY = e.getY();
+        e.consume();
     }
 
     public void mouseReleased(MouseEvent e) {
         if (event == 1) {
             event = 2;
-            initialDrag = true;
             clicks++;
         }
+        e.consume();
     }
 
     public void mouseDragged(MouseEvent e) {
         event = 1;
-        if (initialDrag) {
-            initialX = e.getX();
-            initialY = e.getY();
-        }
         x = e.getX();
         y = e.getY();
-        initialDrag = false;
         e.consume();
     }
 
