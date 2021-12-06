@@ -7,5 +7,9 @@ public enum ID {
     PLAYER,
     GOOMBA(),
     GOAL(),
+    DOOR(),
+    KEY(),
+    TELEPORTER(),
+    COIN(),
     BORDER();
 }

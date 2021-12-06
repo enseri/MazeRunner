@@ -23,16 +23,16 @@ public class Mouse implements MouseInputListener {
 
     public int getDragLoc(int x) {
         switch (x) {
-        case 1:
-            return initialX;
-        case 2:
-            return initialY;
-        case 3:
-            return this.x;
-        case 4:
-            return y;
-        default:
-            return 0;
+            case 1:
+                return initialX;
+            case 2:
+                return initialY;
+            case 3:
+                return this.x;
+            case 4:
+                return y;
+            default:
+                return 0;
         }
     }
 

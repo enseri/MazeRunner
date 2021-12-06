@@ -3,11 +3,11 @@ import java.awt.event.*;
 public class Keyboard implements KeyListener {
     int key, clicks;
 
-    public int getKey(){
+    public int getKey() {
         return key;
     }
 
-    public int getClicks(){
+    public int getClicks() {
         return clicks;
     }
 
