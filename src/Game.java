@@ -104,18 +104,13 @@ public class Game extends Canvas implements Runnable {
                 tick();
                 delta--;
             }
-            if (running) {
+            if (running) 
                 render();
-                x++;
-                if (x >= prevFPS && !makingMaze) {
-                    updateEnemies();
-                    updateCoverableObjects();
-                    x = 0;
-                }
-            }
             if (System.currentTimeMillis() - timer > 1000) {
                 timer += 1000;
                 prevFPS = fps;
+                updateEnemies();
+                updateCoverableObjects();
                 fps = 0;
             }
         }
