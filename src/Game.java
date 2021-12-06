@@ -107,7 +107,7 @@ public class Game extends Canvas implements Runnable {
             if (running) {
                 render();
                 x++;
-                if (x >= prevFPS / 6 && !makingMaze) {
+                if (x >= prevFPS / 2 && !makingMaze) {
                     updateEnemies();
                     updateCoverableObjects();
                     x = 0;
