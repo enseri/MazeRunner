@@ -20,6 +20,7 @@ public class Game extends Canvas implements Runnable {
     private int lives = 3;
     private double coins = 0;
     private int level = 0;
+    private boolean playing = false;
     private boolean preMadeMap;
     private int[] grid = new int[size];
     private int[] goombaFacing = new int[size];
@@ -104,13 +105,15 @@ public class Game extends Canvas implements Runnable {
                 tick();
                 delta--;
             }
-            if (running) 
+            if (running)
                 render();
             if (System.currentTimeMillis() - timer > 1000) {
                 timer += 1000;
                 prevFPS = fps;
-                updateEnemies();
-                updateCoverableObjects();
+                if (playing) {
+                    updateEnemies();
+                    updateCoverableObjects();
+                }
                 fps = 0;
             }
         }
@@ -191,7 +194,6 @@ public class Game extends Canvas implements Runnable {
         }
         int keyboardClicks = 0, mouseClicks = 0, event = 0, key = 0, zone = 1, objectLoc, spawns = 0,
                 doors = 0, keys = 0, teleporters = 0;
-        boolean playing = true;
         if (!preMadeMap)
             makingMaze = true;
         while (makingMaze) {
@@ -447,11 +449,12 @@ public class Game extends Canvas implements Runnable {
         keyboardClicks = keyboard.getClicks();
         boolean firstRun = true;
         boolean playerHasBeenMoved = false;
+        playing = true;
         while (playing) {
             if (preMadeMap && firstRun) {
                 collectedCoins = 0;
                 coins = 0;
-                for(int i = 0; i != size; i++){
+                for (int i = 0; i != size; i++) {
                     collectedCheckpoints[i] = 0;
                 }
                 grid = Stats.ReadMap(level);
