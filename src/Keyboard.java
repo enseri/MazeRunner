@@ -14,7 +14,7 @@ public class Keyboard implements KeyListener {
 
     public void keyPressed(KeyEvent e) {
         x++;
-        if(x % 4 == 0){
+        if(x % 3 == 0){
         key = e.getKeyCode();
         clicks++;
         }

@@ -471,7 +471,7 @@ public class Game extends Canvas implements Runnable {
             playerHasBeenMoved = false;
             key = keyboard.getKey();
             keyboardClicks = keyboard.getClicks();
-            if (key == 87) { // W
+            if (key == 87 || key == 38) { // W or Up arrow
                 if (pLOC - line > -1 && grid[pLOC - line] != 1 && grid[pLOC - line] != 6 && grid[pLOC - line] != 4) {
                     if (grid[pLOC - line] == 3) {
                         if (collectedCheckpoints[pLOC - line] == 0)
@@ -519,7 +519,7 @@ public class Game extends Canvas implements Runnable {
                     respawn();
                     lives--;
                 }
-            } else if (key == 65) { // A
+            } else if (key == 65 || key == 37) { // A or Left arrow
                 if (pLOC % line != 0 && grid[pLOC - 1] != 1 && grid[pLOC - 1] != 4 && grid[pLOC - 1] != 6) {
                     if (grid[pLOC - 1] == 3) {
                         if (collectedCheckpoints[pLOC - 1] == 0)
@@ -567,7 +567,7 @@ public class Game extends Canvas implements Runnable {
                     respawn();
                     lives--;
                 }
-            } else if (key == 83) { // S
+            } else if (key == 83 || key == 40) { // S or Down arrow
                 if (pLOC + line < size && grid[pLOC + line] != 1 && grid[pLOC + line] != 4 && grid[pLOC + line] != 6) {
                     if (grid[pLOC + line] == 3) {
                         spawnLocation = pLOC + line;
@@ -615,7 +615,7 @@ public class Game extends Canvas implements Runnable {
                     respawn();
                     lives--;
                 }
-            } else if (key == 68) { // D
+            } else if (key == 68 || key == 39) { // D or Right arrow
                 if ((pLOC - (line - 1)) % line != 0 && grid[pLOC + 1] != 1 && grid[pLOC + 1] != 4
                         && grid[pLOC + 1] != 6) {
                     if (grid[pLOC + 1] == 3) {
@@ -777,7 +777,7 @@ public class Game extends Canvas implements Runnable {
                         goombaFacing[i - line] = 1;
                         handler.replaceObject((i - line) * 3,
                                 new GOOMBA(((i - line) % line) * tileSize, ((i - line) / line) * tileSize, ID.GOOMBA));
-                    } else if (i - line > -1 && grid[i - line] == 11) {
+                    } else if (i - line > -1 && grid[i - line] == 11 && coverableObjects[i - line] == 0) {
                         handler.replaceObject(i * 3, new TILE((i % line) * tileSize, (i / line) * tileSize, ID.TILE));
                         grid[i] = 0;
                         grid[i - line] = 40;
@@ -801,7 +801,7 @@ public class Game extends Canvas implements Runnable {
                         goombaFacing[i - 1] = 2;
                         handler.replaceObject((i - 1) * 3,
                                 new GOOMBA(((i - 1) % line) * tileSize, ((i - 1) / line) * tileSize, ID.GOOMBA));
-                    } else if (i % line != 0 && grid[i - 1] == 11) {
+                    } else if (i % line != 0 && grid[i - 1] == 11 && coverableObjects[i - 1] == 0) {
                         handler.replaceObject(i * 3, new TILE((i % line) * tileSize, (i / line) * tileSize, ID.TILE));
                         grid[i] = 0;
                         grid[i - 1] = 40;
@@ -824,7 +824,7 @@ public class Game extends Canvas implements Runnable {
                         goombaFacing[i + line] = 3;
                         handler.replaceObject((i + line) * 3,
                                 new GOOMBA(((i + line) % line) * tileSize, ((i + line) / line) * tileSize, ID.GOOMBA));
-                    } else if (i + line < size && grid[i + line] == 11) {
+                    } else if (i + line < size && grid[i + line] == 11 && coverableObjects[i + line] == 0) {
                         handler.replaceObject(i * 3, new TILE((i % line) * tileSize, (i / line) * tileSize, ID.TILE));
                         grid[i] = 0;
                         grid[i + line] = 40;
@@ -848,7 +848,7 @@ public class Game extends Canvas implements Runnable {
                         goombaFacing[i + 1] = 4;
                         handler.replaceObject((i + 1) * 3,
                                 new GOOMBA(((i + 1) % line) * tileSize, ((i + 1) / line) * tileSize, ID.GOOMBA));
-                    } else if (i % line != 0 && grid[i + 1] == 11) {
+                    } else if (i % line != 0 && grid[i + 1] == 11 && coverableObjects[i + 1] == 0) {
                         handler.replaceObject(i * 3, new TILE((i % line) * tileSize, (i / line) * tileSize, ID.TILE));
                         grid[i] = 0;
                         grid[i + 1] = 40;
