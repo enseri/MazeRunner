@@ -1,6 +1,8 @@
 import static java.lang.System.out;
 import java.util.Scanner;
 
+import javax.swing.Popup;
+
 import java.awt.Canvas;
 import java.awt.Graphics;
 import java.awt.Color;
@@ -22,12 +24,14 @@ public class Game extends Canvas implements Runnable {
     private int level = 0;
     private boolean playing = false;
     private boolean preMadeMap;
+    private boolean popUpDelay;
     private int[] grid = new int[size];
     private int[] goombaFacing = new int[size];
     private int[] coverableObjects = new int[size];
     private int[] doorStats = new int[size];
     private int[] teleporterStats = new int[size];
     private int[] collectedCheckpoints = new int[size];
+    private int[] popUps = new int[size];
     private double collectedCoins = 0;
     private boolean updatingEnemies = false;
     private Thread thread;
@@ -110,7 +114,11 @@ public class Game extends Canvas implements Runnable {
             if (System.currentTimeMillis() - timer > 1000) {
                 timer += 1000;
                 prevFPS = fps;
-                if (playing) {
+                if (playing && !keyboard.getPause()) {
+                    if(popUpDelay)
+                        popUpDelay = false;
+                    else
+                        popUpDelay = true;
                     updateEnemies();
                     updateCoverableObjects();
                 }
@@ -150,7 +158,7 @@ public class Game extends Canvas implements Runnable {
     // Zone 2: Spawns
     // Zone 3: Checkpoints
     // Zone 4: Goomba Traps
-    // Zone 5: Timer Traps
+    // Zone 5: Pop Up Traps
     // Zone 6: Door
     // Zone 7: 1st Teleporter
     // Zone 8: Coins
@@ -166,7 +174,7 @@ public class Game extends Canvas implements Runnable {
     // Grid 2: Spawn green
     // Grid 3: Checkpoint yellow
     // Grid 4: Goomba Trap hazel
-    // Grid 5: Timer Traps NA
+    // Grid 5: Pop Up Traps blue
     // Grid 6: Door gray
     // Grid 7: Key light yellow
     // Grid 8: Teleporter dark purple
@@ -258,6 +266,18 @@ public class Game extends Canvas implements Runnable {
                                 out.println("Goomba turned");
                                 goombaFacing[objectLoc]++;
                             }
+                        }
+                    } else if (zone == 5) {
+                        if (grid[objectLoc] == 0) {
+                            grid[objectLoc] = 5;
+                            popUps[objectLoc] = 1;
+                            handler.replaceObject(objectLoc * 3, new POPUP((objectLoc % line) * tileSize,
+                                    (objectLoc / line) * tileSize, ID.POPUP));
+                        } else if (grid[objectLoc] == 5) {
+                            grid[objectLoc] = 0;
+                            popUps[objectLoc] = 0;
+                            handler.replaceObject(objectLoc * 3,
+                                    new TILE((objectLoc % line) * tileSize, (objectLoc / line) * tileSize, ID.TILE));
                         }
                     } else if (zone == 6) {
                         if (grid[objectLoc] == 0) {
@@ -403,6 +423,18 @@ public class Game extends Canvas implements Runnable {
                                     handler.replaceObject(((currentY * line) + currentX) * 3,
                                             new TILE(currentX * tileSize, currentY * tileSize, ID.TILE));
                                 }
+                            } else if (zone == 5) {
+                                if (grid[(currentY * line) + currentX] == 0) {
+                                    grid[(currentY * line) + currentX] = 5;
+                                    popUps[(currentY * line) + currentX] = 1;
+                                    handler.replaceObject(((currentY * line) + currentX) * 3,
+                                            new POPUP(currentX * tileSize, currentY * tileSize, ID.POPUP));
+                                } else if (grid[(currentY * line) + currentX] == 5) {
+                                    grid[(currentY * line) + currentX] = 0;
+                                    popUps[(currentY * line) + currentX] = 0;
+                                    handler.replaceObject(((currentY * line) + currentX) * 3,
+                                            new TILE(currentX * tileSize, currentY * tileSize, ID.TILE));
+                                }
                             } else if (zone == 8) {
                                 if (grid[(currentY * line) + currentX] == 0) {
                                     grid[(currentY * line) + currentX] = 9;
@@ -472,7 +504,7 @@ public class Game extends Canvas implements Runnable {
             key = keyboard.getKey();
             keyboardClicks = keyboard.getClicks();
             if (key == 87 || key == 38) { // W or Up arrow
-                if (pLOC - line > -1 && grid[pLOC - line] != 1 && grid[pLOC - line] != 6 && grid[pLOC - line] != 4) {
+                if (pLOC - line > -1 && grid[pLOC - line] != 1 && grid[pLOC - line] != 6 && grid[pLOC - line] != 5 && grid[pLOC - line] != 4) {
                     if (grid[pLOC - line] == 3) {
                         if (collectedCheckpoints[pLOC - line] == 0)
                             lives = 3;
@@ -515,12 +547,12 @@ public class Game extends Canvas implements Runnable {
                         movePlayer(pLOC, pLOC - line);
                     }
 
-                } else if (pLOC - line > -1 && grid[pLOC - line] == 4) {
+                } else if (pLOC - line > -1 && (grid[pLOC - line] == 4 || grid[pLOC - line] == 5)) {
                     respawn();
                     lives--;
                 }
             } else if (key == 65 || key == 37) { // A or Left arrow
-                if (pLOC % line != 0 && grid[pLOC - 1] != 1 && grid[pLOC - 1] != 4 && grid[pLOC - 1] != 6) {
+                if (pLOC % line != 0 && grid[pLOC - 1] != 1 && grid[pLOC - 1] != 4 && grid[pLOC - 1] != 5 && grid[pLOC - 1] != 6) {
                     if (grid[pLOC - 1] == 3) {
                         if (collectedCheckpoints[pLOC - 1] == 0)
                             lives = 3;
@@ -563,12 +595,12 @@ public class Game extends Canvas implements Runnable {
                         movePlayer(pLOC, pLOC - 1);
                     }
 
-                } else if (pLOC % line != 0 && grid[pLOC - 1] == 4) {
+                } else if (pLOC % line != 0 && (grid[pLOC - 1] == 4 || grid[pLOC - 1] == 5)) {
                     respawn();
                     lives--;
                 }
             } else if (key == 83 || key == 40) { // S or Down arrow
-                if (pLOC + line < size && grid[pLOC + line] != 1 && grid[pLOC + line] != 4 && grid[pLOC + line] != 6) {
+                if (pLOC + line < size && grid[pLOC + line] != 1 && grid[pLOC + line] != 4 && grid[pLOC + line] != 5 && grid[pLOC + line] != 6) {
                     if (grid[pLOC + line] == 3) {
                         spawnLocation = pLOC + line;
                         if (collectedCheckpoints[pLOC + line] == 0)
@@ -611,12 +643,12 @@ public class Game extends Canvas implements Runnable {
                         movePlayer(pLOC, pLOC + line);
                     }
 
-                } else if (pLOC + line > -1 && grid[pLOC + line] == 4) {
+                } else if (pLOC + line > -1 && (grid[pLOC + line] == 4 || grid[pLOC + line] == 5)) {
                     respawn();
                     lives--;
                 }
             } else if (key == 68 || key == 39) { // D or Right arrow
-                if ((pLOC - (line - 1)) % line != 0 && grid[pLOC + 1] != 1 && grid[pLOC + 1] != 4
+                if ((pLOC - (line - 1)) % line != 0 && grid[pLOC + 1] != 1 && grid[pLOC + 1] != 5 && grid[pLOC + 1] != 4
                         && grid[pLOC + 1] != 6) {
                     if (grid[pLOC + 1] == 3) {
                         if (collectedCheckpoints[pLOC + 1] == 0)
@@ -660,7 +692,7 @@ public class Game extends Canvas implements Runnable {
                         movePlayer(pLOC, pLOC + 1);
                     }
 
-                } else if ((pLOC - (line - 1)) % line != 0 && grid[pLOC + 1] == 4) {
+                } else if ((pLOC - (line - 1)) % line != 0 && (grid[pLOC + 1] == 4 || grid[pLOC + 1] == 5)) {
                     respawn();
                     lives--;
                 }
@@ -726,6 +758,9 @@ public class Game extends Canvas implements Runnable {
                 coverableObjects[i] = 3;
             } else if (grid[i] == 4) {
                 handler.replaceObject(i * 3, new GOOMBA((i % line) * tileSize, (i / line) * tileSize, ID.GOOMBA));
+            } else if (grid[i] == 5) {
+                popUps[i] = 1;
+                handler.replaceObject(i * 3, new POPUP((i % line) * tileSize, (i / line) * tileSize, ID.POPUP));
             } else if (grid[i] == 6) {
                 handler.replaceObject(i * 3, new DOOR((i % line) * tileSize, (i / line) * tileSize, ID.DOOR));
             } else if (grid[i] == 7) {
@@ -862,6 +897,22 @@ public class Game extends Canvas implements Runnable {
                     } else {
                         goombaFacing[i] = 2;
                     }
+                }
+            } else if (popUps[i] != 0 && grid[i] != 4 && grid[i] != 40 && !popUpDelay) {
+                if(popUps[i] == 1) {
+                    grid[i] = 0;
+                    popUps[i] = -1;
+                    handler.replaceObject(i * 3, new TILE((i % line) * tileSize, (i / line) * tileSize, ID.TILE));
+                } else if(popUps[i] == -1) {
+                    if(grid[i] == 11) {
+                        handler.replaceObject(i * 3, new TILE((i % line) * tileSize, (i / line) * tileSize, ID.TILE));
+                        grid[i] = 0;
+                        respawn();
+                        lives--;
+                    }
+                    grid[i] = 5;
+                    popUps[i] = 1;
+                    handler.replaceObject(i * 3, new POPUP((i % line) * tileSize, (i / line) * tileSize, ID.POPUP));
                 }
             }
         }

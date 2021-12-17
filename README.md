@@ -27,8 +27,8 @@ Instructions:
                 * To his spawn location after the enemy hits the player 3 times the whole map will be reset
                 * If you wish to change the direction the Goomba will face(upwards by default) click on the same tile and it will rotate -90 degrees
                 * If you keep clicking on it after 3 clicks after placement it will be deleted
-            // Zone 5: Timer Traps
-                * A trap that only appears every second, give the player a timer to complete a certain part of the map
+            // Zone 5: Pop Up Traps
+                * A trap that only appears every second.
                 * It also is invisible until it is active
             // Zone 6: Door
                 * This is an immovable object, much like the Borders, except when a key is collected once the tile with the key
