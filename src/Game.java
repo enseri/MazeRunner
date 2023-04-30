@@ -48,9 +48,9 @@ public class Game extends Canvas implements Runnable {
         }
         WIDTH = tileSize * line;
         HEIGHT = tileSize * line;
+        handler = new Handler();
         new Window(WIDTH, HEIGHT, "MazeRunner", this);
 
-        handler = new Handler();
         this.addMouseListener(mouse);
         this.addMouseMotionListener(mouse);
         this.addKeyListener(keyboard);
